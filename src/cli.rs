@@ -14,9 +14,11 @@ pub enum Commands {
     #[command(arg_required_else_help = true)]
     Create {
         /// Directory with the image files
+        #[clap(default_value = ".")]
         input_dir: PathBuf,
 
         /// Directory to write the gallery into
+        #[clap(default_value = "gallery")]
         output_dir: PathBuf,
     },
 }

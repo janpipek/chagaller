@@ -8,6 +8,11 @@ use std::path::PathBuf;
 use askama::Template;
 use crate::pages::IndexTemplate;
 
+pub struct GalleryOpts {
+    pub max_width: u32,
+    pub max_height: u32,
+}
+
 pub fn find_image_files(input_dir: &PathBuf) -> Vec<PathBuf> {
     let allowed_extensions = vec!["jpg", "jpeg"];
     let mut result = vec![];
