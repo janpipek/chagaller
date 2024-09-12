@@ -1,5 +1,6 @@
 mod cli;
 mod gallery;
+mod pages;
 
 use std::path::PathBuf;
 

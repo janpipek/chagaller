@@ -5,10 +5,8 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
-pub struct GalleryOpts {
-    pub max_width: u32,
-    pub max_height: u32,
-}
+use askama::Template;
+use crate::pages::IndexTemplate;
 
 pub fn find_image_files(input_dir: &PathBuf) -> Vec<PathBuf> {
     let allowed_extensions = vec!["jpg", "jpeg"];
@@ -20,7 +18,6 @@ pub fn find_image_files(input_dir: &PathBuf) -> Vec<PathBuf> {
             result.push(path);
         }
     }
-
     return result;
 }
 
@@ -57,16 +54,8 @@ pub fn create_gallery_page(output_dir: &PathBuf, source_images: &Vec<PathBuf>) {
     let f = File::create(page_path).expect("Unable to create file");
     let mut output = BufWriter::new(f);
 
-    output.write(b"<html><body>\n").ok();
-
-    for image_path in source_images {
-        let name = image_path.file_name().unwrap().to_str().unwrap();
-        let stem = image_path.file_stem().unwrap().to_str().unwrap();
-        write!(output, "<a href='images/{}'>", name).ok();
-        write!(output, "<img src='thumbnails/{}.jpg'/>", stem).ok();
-        write!(output, "</a>").ok();
-    }
-    output.write(b"</body><html>\n").ok();
+    let index = IndexTemplate { title: "gallery"};
+    write!(output, "{}", index.render().unwrap());
 }
 
 pub fn get_thumbnail_path(output_dir: &PathBuf, image_path: &PathBuf) -> PathBuf {
