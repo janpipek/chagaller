@@ -1,6 +1,8 @@
 use image::imageops::FilterType;
 use image::ImageReader;
 use std::fs;
+use std::fs::File;
+use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 pub struct GalleryOpts {
@@ -35,17 +37,47 @@ pub fn create_gallery(output_dir: &PathBuf, source_images: &Vec<PathBuf>, opts: 
         process_image(image_path, output_dir, opts);
     }
 
-    // create_gallery_page()
+    create_gallery_page(output_dir, source_images);
 }
 
 pub fn process_image(image_path: &PathBuf, output_dir: &PathBuf, opts: &GalleryOpts) {
-    let name = image_path.file_name().unwrap();
-    let mut target_path = output_dir.join("images").join(name);
-    target_path.set_extension("jpg");
-
+    let target_path = get_target_path(output_dir, image_path);
     let img = ImageReader::open(image_path).unwrap().decode().unwrap();
     let scaled_img = img.resize(opts.max_width, opts.max_height, FilterType::Nearest);
     scaled_img.save(&target_path).ok();
 
-    // fs::copy(image_path, target_path);
+    let thumbnail_path = get_thumbnail_path(output_dir, image_path);
+    let thumbnail_img = img.resize(128, 128, FilterType::Nearest);
+    thumbnail_img.save(&thumbnail_path).ok();
+}
+
+pub fn create_gallery_page(output_dir: &PathBuf, source_images: &Vec<PathBuf>) {
+    let page_path = output_dir.join("index.html");
+
+    let f = File::create(page_path).expect("Unable to create file");
+    let mut output = BufWriter::new(f);
+
+    output.write(b"<html><body>\n").ok();
+
+    for image_path in source_images {
+        let name = image_path.file_name().unwrap().to_str().unwrap();
+        let stem = image_path.file_stem().unwrap().to_str().unwrap();
+        write!(output, "<a href='images/{}'>", name).ok();
+        write!(output, "<img src='thumbnails/{}.jpg'/>", stem).ok();
+        write!(output, "</a>").ok();
+    }
+    output.write(b"</body><html>\n").ok();
+}
+
+pub fn get_thumbnail_path(output_dir: &PathBuf, image_path: &PathBuf) -> PathBuf {
+    let name = image_path.file_name().unwrap();
+    let mut thumbnail_path = output_dir.join("thumbnails").join(name);
+    thumbnail_path.set_extension("jpg");
+    return thumbnail_path;
+}
+
+pub fn get_target_path(output_dir: &PathBuf, image_path: &PathBuf) -> PathBuf {
+    let name = image_path.file_name().unwrap();
+    let target_path = output_dir.join("images").join(name);
+    return target_path;
 }
