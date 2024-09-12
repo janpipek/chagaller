@@ -15,5 +15,8 @@ pub enum Commands {
     Create {
         /// Directory with the image files
         input_dir: PathBuf,
+
+        /// Directory to write the gallery into
+        output_dir: PathBuf,
     },
 }
