@@ -11,7 +11,7 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
-    #[command(arg_required_else_help = true)]
+    // #[command(arg_required_else_help = true)]
     Create {
         /// Directory with the image files
         #[clap(default_value = ".")]
