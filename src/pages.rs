@@ -1,4 +1,5 @@
 use askama::Template;
+use rust_embed::Embed;
 use crate::gallery::{Gallery, GalleryOpts};
 use crate::image::Image;
 
@@ -23,3 +24,7 @@ pub struct ImageTemplate<'a> {
 
     pub index: usize,
 }
+
+#[derive(Embed)]
+#[folder = "static/"]
+pub struct StaticFiles;

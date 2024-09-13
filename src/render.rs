@@ -3,11 +3,12 @@ use std::fs::File;
 use std::io::BufWriter;
 use image::imageops::FilterType;
 use image::ImageReader;
-use crate::pages::{IndexTemplate, ImageTemplate};
+use crate::pages::{IndexTemplate, ImageTemplate, StaticFiles};
 use std::path::PathBuf;
 use crate::image::Image;
 use askama::Template;
 use std::io::Write;
+use clap::error::ContextValue::String;
 use crate::gallery::{Gallery, GalleryOpts};
 
 pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, opts: &crate::gallery::GalleryOpts) {
@@ -25,6 +26,7 @@ pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, o
 
     render_gallery_page(&gallery, output_dir, &opts);
     render_image_pages(&gallery, output_dir, &opts);
+    render_static_files(output_dir);
 }
 
 pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &crate::gallery::GalleryOpts) {
@@ -65,6 +67,24 @@ pub fn render_image_pages(gallery: &crate::gallery::Gallery, output_dir: &PathBu
             index,
         };
         write!(output, "{}", template.render().unwrap()).ok();
+    }
+}
+
+pub fn render_static_files(output_dir: &PathBuf) {
+    let static_dir = output_dir.join("static");
+    fs::create_dir(static_dir.clone()).ok();
+
+    for file_name in StaticFiles::iter() {
+        let file_path = static_dir.join(file_name.as_ref());
+
+        let out = File::create(file_path).expect("Unable to create file");
+        let mut output = BufWriter::new(out);
+
+        let embedded = StaticFiles::get(&file_name).unwrap();
+        let data = embedded.data;
+        output.write_all(&data[..]).ok();
+
+        println!("{}", file_name);
     }
 }
 
