@@ -5,6 +5,7 @@ use crate::image::Image;
 pub struct GalleryOpts {
     pub max_width: u32,
     pub max_height: u32,
+    pub thumbnail_size: u32,
 }
 
 pub struct Gallery {

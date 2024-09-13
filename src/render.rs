@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use crate::image::Image;
 use askama::Template;
 use std::io::Write;
+use crate::gallery::GalleryOpts;
 
 pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, opts: &crate::gallery::GalleryOpts) {
     if output_dir.exists() && !output_dir.is_dir() {
@@ -22,7 +23,7 @@ pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, o
         render_images(image, output_dir, opts);
     }
 
-    render_gallery_page(&gallery, output_dir);
+    render_gallery_page(&gallery, output_dir, &opts);
 }
 
 pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &crate::gallery::GalleryOpts) {
@@ -33,17 +34,17 @@ pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &crate::gallery:
     scaled_img.save(&target_path).ok();
 
     let thumbnail_path = get_thumbnail_path(output_dir, image_path);
-    let thumbnail_img = img.resize(128, 128, FilterType::Nearest);
+    let thumbnail_img = img.resize(opts.thumbnail_size, opts.thumbnail_size, FilterType::Nearest);
     thumbnail_img.save(&thumbnail_path).ok();
 }
 
-pub fn render_gallery_page(gallery: &crate::gallery::Gallery, output_dir: &PathBuf) {
+pub fn render_gallery_page(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, gallery_opts: &GalleryOpts) {
     let page_path = output_dir.join("index.html");
 
     let f = File::create(page_path).expect("Unable to create file");
     let mut output = BufWriter::new(f);
 
-    let index = IndexTemplate { title: "gallery"};
+    let index = IndexTemplate { gallery, gallery_opts };
     write!(output, "{}", index.render().unwrap()).ok();
 }
 

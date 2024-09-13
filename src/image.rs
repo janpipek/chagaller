@@ -12,4 +12,8 @@ impl Image {
             title: String::from("Image"),
         }
     }
+
+    pub fn base_name(&self) -> &str {
+        self.source_path.file_stem().unwrap().to_str().unwrap()
+    }
 }

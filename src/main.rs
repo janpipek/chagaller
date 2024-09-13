@@ -18,6 +18,7 @@ fn process(input_dir: &PathBuf, output_dir: &PathBuf) {
     let opts = GalleryOpts {
         max_width: 1600,
         max_height: 1600,
+        thumbnail_size: 128,
     };
 
     let gallery = Gallery::from_input_dir(input_dir);

@@ -1,10 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>{{ title }}</title>
-        <link href="style.css" rel="stylesheet" />
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ gallery.title }}</title>
+    <link href="style.css" rel="stylesheet" />
+    <style>
+        .gallery-page .gallery-frame a.thumb { width: {{ gallery_opts.thumbnail_size }}px; height: {{ gallery_opts.thumbnail_size }}px; }
+        .up-link { color: #888; }
+    </style>
+</head>
 
-    <body class="gallery-page"></body>
+<body class="gallery-page">
+<h1><a class="up-link" href=".." title="Up">↑</a> {{ gallery.title }}</h1>
+<div class="gallery-frame">
+    {% for image in gallery.images %}
+    <a href="{{ image.base_name() }}.html" title="{{ image.title }}" class="thumb"><img src="thumbnails/{{ image.base_name() }}.jpg" width="{{ gallery_opts.thumbnail_size }}" height="{{ gallery_opts.thumbnail_size }}" /></a>
+    {% endfor %}
+</div>
+</body>
 </html>
