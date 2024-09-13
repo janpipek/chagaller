@@ -3,12 +3,12 @@ use std::fs::File;
 use std::io::BufWriter;
 use image::imageops::FilterType;
 use image::ImageReader;
-use crate::pages::IndexTemplate;
+use crate::pages::{IndexTemplate, ImageTemplate};
 use std::path::PathBuf;
 use crate::image::Image;
 use askama::Template;
 use std::io::Write;
-use crate::gallery::GalleryOpts;
+use crate::gallery::{Gallery, GalleryOpts};
 
 pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, opts: &crate::gallery::GalleryOpts) {
     if output_dir.exists() && !output_dir.is_dir() {
@@ -24,6 +24,7 @@ pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, o
     }
 
     render_gallery_page(&gallery, output_dir, &opts);
+    render_image_pages(&gallery, output_dir, &opts);
 }
 
 pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &crate::gallery::GalleryOpts) {
@@ -44,8 +45,27 @@ pub fn render_gallery_page(gallery: &crate::gallery::Gallery, output_dir: &PathB
     let f = File::create(page_path).expect("Unable to create file");
     let mut output = BufWriter::new(f);
 
-    let index = IndexTemplate { gallery, gallery_opts };
-    write!(output, "{}", index.render().unwrap()).ok();
+    let template = IndexTemplate { gallery, gallery_opts };
+    write!(output, "{}", template.render().unwrap()).ok();
+}
+
+pub fn render_image_pages(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, gallery_opts: &GalleryOpts) {
+    let image_count = gallery.image_count();
+    for (index, image) in gallery.images.iter().enumerate() {
+        let page_path = output_dir.join(format!("{}.html", image.base_name()));
+        let f = File::create(page_path).expect("Unable to create file");
+        let mut output = BufWriter::new(f);
+
+        let template = ImageTemplate{
+            gallery,
+            gallery_opts,
+            image,
+            previous_image: if index > 0 {Some(&gallery.images[index-1])} else { None },
+            next_image: if index < image_count - 1 {Some(&gallery.images[index+1])} else { None },
+            index,
+        };
+        write!(output, "{}", template.render().unwrap()).ok();
+    }
 }
 
 pub fn get_thumbnail_path(output_dir: &PathBuf, image_path: &PathBuf) -> PathBuf {
@@ -57,6 +77,7 @@ pub fn get_thumbnail_path(output_dir: &PathBuf, image_path: &PathBuf) -> PathBuf
 
 pub fn get_target_path(output_dir: &PathBuf, image_path: &PathBuf) -> PathBuf {
     let name = image_path.file_name().unwrap();
-    let target_path = output_dir.join("images").join(name);
+    let mut target_path = output_dir.join("images").join(name);
+    target_path.set_extension("jpg");
     target_path
 }

@@ -21,5 +21,5 @@ pub struct ImageTemplate<'a> {
     pub previous_image: Option<&'a Image>,
     pub next_image: Option<&'a Image>,
 
-    pub index: u32,
+    pub index: usize,
 }
