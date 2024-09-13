@@ -1,12 +1,15 @@
 use std::path::{Path, PathBuf};
 use chrono::{DateTime, Local};
+use exif;
+use exif::{Exif, Tag};
+use std::io::BufReader;
 
 pub struct ExifInfo {
     pub camera: String,
-    pub iso: i32,
-    pub aperture: f32,
-    pub exposure: f32,
-    pub focal_length: f32,
+    pub iso: String,
+    pub aperture: String,
+    pub exposure: String,
+    pub focal_length: String,
     pub date_time: DateTime<Local>,
 }
 
@@ -38,12 +41,48 @@ impl Image {
     }
 
     pub fn get_date_time(&self) -> DateTime<Local> {
-        Local::now()
+        match &self.exif_info {
+            Some(exif_info) => {
+                exif_info.date_time
+            },
+            None => Local::now()
+        }
     }
 }
 
 pub fn extract_exif_info(source_path: &Path) -> Option<ExifInfo> {
-    None
+    let file = std::fs::File::open(source_path).unwrap();
+    let mut reader = BufReader::new(&file);
+    let exif_reader = exif::Reader::new();
+    match exif_reader.read_from_container(&mut reader) {
+        Ok(exif_source) => {
+            Some(ExifInfo {
+                camera: extract_tag(&exif_source, Tag::Model, None),
+                iso: extract_tag(&exif_source, Tag::ISOSpeed, None),
+                aperture: extract_tag(&exif_source, Tag::ApertureValue, Some(|x| format!("f/{}", x))),
+                exposure: extract_tag(&exif_source, Tag::ShutterSpeedValue, None),
+                focal_length: extract_tag(&exif_source, Tag::FocalLength, None),
+                date_time: Local::now(),
+            })
+        }
+        Err(_) => None
+    }
 }
 
+fn extract_tag(exif_source: &Exif, tag: Tag, formatter: Option<fn(String) -> String>) -> String {
+    let field = exif_source.get_field(tag, exif::In::PRIMARY);
+    match field {
+        None => String::from("Unknown"),
+        Some(f) => {
+            let v = f.display_value();
+            match formatter {
+                None => v.with_unit(exif_source).to_string(),
+                Some(t) => {
+                    let mut vs  = v.to_string();
+                    t(vs)
+                }
+            }
+        }
+    }
+}
 

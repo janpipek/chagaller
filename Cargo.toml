@@ -8,4 +8,5 @@ askama = "0.12.1"
 chrono = "0.4.38"
 clap = { version = "4.5.17", features = ["derive"] }
 image = "0.25.2"
+kamadak-exif = "0.5.5"
 rust-embed = "8.5.0"
