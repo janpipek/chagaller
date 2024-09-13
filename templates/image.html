@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ gallery.title }} :: {{ image.title }}</title>
+    <link href="style.css" rel="stylesheet" />
+</head>
+<body class="image-page"><div class="image-toolbar">
+            <a class='arrow' id='home' title="Home" href='index.html'>&#9632;</a>
+            {% if previous_image.is_some() %}
+                <a class='arrow' id='left' title="Previous" href='{{ previous_image.unwrap().base_name() }}.html'>&#9664;</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+            {% if next_image.is_some() %}
+                <a class='arrow' id='right' title="Next" href='{{ next_image.unwrap().base_name() }}.html'>&#9654;</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+            <span>{{ index }}/{{ gallery.image_count() }}</span>
+            {% if image.title.len() > 0 %}
+                <span>{{ image.title }}</span>
+            {% endif %}
+            <span>{{ image.get_date_time().date_naive() -}}
+                {%- if image.meta_info.place.is_some() -%}
+                , {{ image.meta_info.place.as_ref().unwrap() }}
+                {% endif %}
+            </span>
+            {% if image.meta_info.author.is_some() %}
+                <span>© {{ image.meta_info.author.as_ref().unwrap() }}</span>
+            {% endif %}
+        </div><img class="image-itself" src="{{ image.base_name() }}.jpg" id="image-itself"/>
+        {% if image.exif_info.is_some() %}
+            {% let exif = image.exif_info.as_ref().unwrap() %}
+            <div id="exif">
+               {{ exif.camera }} | ISO {{ exif.iso }} | {{ exif.aperture }} | {{ exif.exposure }} | {{ exif.focal_length }}
+            </div>
+        {% endif %}
+
+        <script src="gallery.js"></script>
+</body>
+</html>
