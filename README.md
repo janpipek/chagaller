@@ -1,2 +1,3 @@
 # chagaller
-Rewrite of chagallpy
+
+Rewrite of [chagallpy](https://github.com/janpipek/chagallpy).
