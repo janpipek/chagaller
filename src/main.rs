@@ -1,13 +1,15 @@
 mod cli;
 mod gallery;
 mod pages;
+mod image;
+mod render;
 
 use std::path::PathBuf;
 
 use crate::cli::{Cli, Commands};
-use crate::gallery::{render_gallery, Gallery};
+use crate::gallery::{Gallery, GalleryOpts};
 use clap::Parser;
-use gallery::GalleryOpts;
+use crate::render::render_gallery;
 
 fn process(input_dir: &PathBuf, output_dir: &PathBuf) {
     let dir_str = input_dir.display();
