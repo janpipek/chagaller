@@ -21,6 +21,10 @@ impl Gallery {
             title: String::from("Gallery"),
         }
     }
+
+    pub fn image_count(&self) -> usize {
+        self.images.len()
+    }
 }
 
 
