@@ -1,17 +1,17 @@
+use std::cmp::min;
 use std::fs;
 use std::fs::File;
 use std::io::BufWriter;
 use image::imageops::FilterType;
-use image::ImageReader;
+use image::{GenericImageView, ImageReader};
 use crate::pages::{IndexTemplate, ImageTemplate, StaticFiles};
 use std::path::PathBuf;
 use crate::image::Image;
 use askama::Template;
 use std::io::Write;
-use clap::error::ContextValue::String;
 use crate::gallery::{Gallery, GalleryOpts};
 
-pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, opts: &crate::gallery::GalleryOpts) {
+pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, opts: &GalleryOpts) {
     if output_dir.exists() && !output_dir.is_dir() {
         return;
     }
@@ -21,7 +21,7 @@ pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, o
     fs::create_dir(output_dir.join("thumbnails")).ok();
 
     for image in gallery.images.iter() {
-        render_images(image, output_dir, opts);
+        render_images(image, output_dir, &opts);
     }
 
     render_gallery_page(&gallery, output_dir, &opts);
@@ -29,15 +29,21 @@ pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, o
     render_static_files(output_dir);
 }
 
-pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &crate::gallery::GalleryOpts) {
+pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &GalleryOpts) {
     let image_path = &image.source_path;
     let target_path = get_target_path(output_dir, image_path);
     let img = ImageReader::open(image_path).unwrap().decode().unwrap();
-    let scaled_img = img.resize(opts.max_width, opts.max_height, FilterType::Nearest);
+    let scaled_img = img.resize(opts.max_width, opts.max_height, FilterType::Lanczos3);
     scaled_img.save(&target_path).ok();
 
     let thumbnail_path = get_thumbnail_path(output_dir, image_path);
-    let thumbnail_img = img.resize(opts.thumbnail_size, opts.thumbnail_size, FilterType::Nearest);
+    let min_size = min(img.width(), img.height());
+    let thumbnail_img = img.crop_imm(
+        (img.width() - min_size) / 2,
+        (img.height() - min_size) / 2,
+        min_size,
+        min_size
+    ).resize(opts.thumbnail_size, opts.thumbnail_size, FilterType::Nearest);
     thumbnail_img.save(&thumbnail_path).ok();
 }
 
