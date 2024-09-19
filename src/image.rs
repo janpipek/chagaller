@@ -78,7 +78,7 @@ fn extract_tag(exif_source: &Exif, tag: Tag, formatter: Option<fn(String) -> Str
             match formatter {
                 None => v.with_unit(exif_source).to_string(),
                 Some(t) => {
-                    let mut vs  = v.to_string();
+                    let vs  = v.to_string();
                     t(vs)
                 }
             }
