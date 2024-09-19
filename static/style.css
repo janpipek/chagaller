@@ -6,21 +6,17 @@ a
 body
 {
     margin: 0;
-    font-family: "Linux Libertine O", Georgia, serif;
+    font-family: Georgia, serif;
     font-size: 135%;
 }
 h1
 {
-    margin: 0.7em auto;
     width: 90%;
 
     text-align: center;
-    margin-top: 1.5em;
-    margin-bottom: 0.2em;
-
+    margin: 1.5em auto 1.2em;
     color: #333;
     max-width: 20em;
-    margin-bottom: 1.2em;
     font-size: 170%;
 }
 
@@ -34,7 +30,7 @@ h1
 {
     max-width: 1300px;
     line-height: 1px;
-    font-size: 0px;
+    font-size: 0;
     margin: auto;
     text-align: left;
     display: inline-block;
@@ -53,7 +49,7 @@ h1
 .image-page
 {
     height: 100%;
-    margin: 0px;
+    margin: 0;
     text-align: center;
     overflow: hidden;
 }
@@ -111,7 +107,6 @@ h1
     min-width: 1.4em;
     height: 1.4em;
     display: inline-block;
-    /*margin-right: 1px;*/
     padding: 4px;
     vertical-align: middle;
     text-align: center;
@@ -135,7 +130,7 @@ h1
 .image-page .toolbar-container .toolbar-detail
 {
     display: none;
-    overflow: display;
+    overflow: visible;
 }
 
 .image-page .toolbar-container:hover .toolbar-detail
