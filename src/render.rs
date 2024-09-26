@@ -11,7 +11,7 @@ use askama::Template;
 use std::io::Write;
 use crate::gallery::{Gallery, GalleryOpts};
 
-pub fn render_gallery(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, opts: &GalleryOpts) {
+pub fn render_gallery(gallery: &Gallery, output_dir: &PathBuf, opts: &GalleryOpts) {
     if output_dir.exists() && !output_dir.is_dir() {
         return;
     }
@@ -70,7 +70,7 @@ pub fn render_image_pages(gallery: &crate::gallery::Gallery, output_dir: &PathBu
             image,
             previous_image: if index > 0 {Some(&gallery.images[index-1])} else { None },
             next_image: if index < image_count - 1 {Some(&gallery.images[index+1])} else { None },
-            index,
+            index: index + 1,  // Not 0-based
         };
         write!(output, "{}", template.render().unwrap()).ok();
     }

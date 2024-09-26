@@ -22,7 +22,7 @@ struct GalleryMetaData {
 
 impl Gallery {
     pub fn from_input_dir(input_dir: &Path) -> Self {
-        let meta_data = Self::load_gallery_yaml(input_dir);
+        let meta_data = Self::parse_gallery_yaml(input_dir);
         let images = find_image_files(input_dir);
 
         Self {
@@ -34,7 +34,7 @@ impl Gallery {
         }
     }
 
-    fn load_gallery_yaml(input_dir: &Path) -> Option<GalleryMetaData> {
+    fn parse_gallery_yaml(input_dir: &Path) -> Option<GalleryMetaData> {
         let yaml_path = input_dir.join("gallery.yaml");
         if yaml_path.exists() {
             let file = std::fs::File::open(yaml_path).unwrap();
