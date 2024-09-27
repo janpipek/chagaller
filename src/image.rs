@@ -1,9 +1,10 @@
-use chrono::{DateTime, Local, TimeZone, format::ParseResult, NaiveDateTime};
+use chrono::{format::ParseResult, DateTime, Local, NaiveDateTime, TimeZone};
 use exif;
 use exif::{Exif, Tag};
-use std::io::BufReader;
-use std::path::{Path, PathBuf};
 use serde::Deserialize;
+use std::fmt;
+use std::io::BufReader;
+use std::path::{Path, PathBuf}; // Import `fmt`
 
 #[derive(Debug)]
 pub struct ExifInfo {
@@ -13,6 +14,16 @@ pub struct ExifInfo {
     pub exposure: String,
     pub focal_length: String,
     pub date_time: Option<NaiveDateTime>,
+}
+
+impl fmt::Display for ExifInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}, ISO {}, f/{}, {} s, {} mm",
+            self.camera, self.iso, self.aperture, self.exposure, self.focal_length
+        )
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -33,7 +44,7 @@ impl Default for MetaInfo {
 }
 
 #[derive(Debug)]
-pub struct Image  {
+pub struct Image {
     pub source_path: PathBuf,
     pub exif_info: Option<ExifInfo>,
     pub meta_info: Option<MetaInfo>,
@@ -43,8 +54,14 @@ impl Image {
     pub fn from_source_path(source_path: &Path) -> Self {
         Self {
             source_path: PathBuf::from(source_path),
-            exif_info: extract_exif_info(source_path),
-            meta_info: parse_image_yaml(source_path)
+            exif_info: {
+                let exif_info = extract_exif_info(source_path);
+                if exif_info.is_some() {
+                    log::debug!("EXIF: {}", exif_info.as_ref().unwrap());
+                }
+                exif_info
+            },
+            meta_info: parse_image_yaml(source_path),
         }
     }
 
@@ -97,17 +114,23 @@ fn parse_date_time(exif_source: &Exif, tag: Tag) -> Option<NaiveDateTime> {
     match field {
         None => None,
         Some(f) => {
+            let x: f32 = field.unwrap().value.into();
+
             let v = f.display_value().to_string();
             log::debug!("Parsing date time: {}", v);
             match NaiveDateTime::parse_from_str(&v, "%Y-%m-%d %H:%M:%S") {
                 Ok(result) => Some(result),
-                Err(_) => None
+                Err(_) => None,
             }
         }
     }
 }
 
-fn extract_exif_tag(exif_source: &Exif, tag: Tag, formatter: Option<fn(String) -> String>) -> String {
+fn extract_exif_tag(
+    exif_source: &Exif,
+    tag: Tag,
+    formatter: Option<fn(String) -> String>,
+) -> String {
     let field = exif_source.get_field(tag, exif::In::PRIMARY);
     match field {
         None => String::from("Unknown"),
@@ -131,5 +154,7 @@ fn parse_image_yaml(source_path: &Path) -> Option<MetaInfo> {
         let file = std::fs::File::open(yaml_path).unwrap();
         let reader = std::io::BufReader::new(file);
         serde_yml::from_reader(reader).unwrap()
-    } else { None }
+    } else {
+        None
+    }
 }

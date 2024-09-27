@@ -1,15 +1,15 @@
+use crate::gallery::{Gallery, GalleryOpts};
+use crate::image::{Image, MetaInfo};
+use crate::pages::{ImageTemplate, IndexTemplate, StaticFiles};
+use askama::Template;
+use image::imageops::FilterType;
+use image::{GenericImageView, ImageReader};
 use std::cmp::min;
 use std::fs;
 use std::fs::File;
 use std::io::BufWriter;
-use image::imageops::FilterType;
-use image::{GenericImageView, ImageReader};
-use crate::pages::{IndexTemplate, ImageTemplate, StaticFiles};
-use std::path::PathBuf;
-use crate::image::{Image, MetaInfo};
-use askama::Template;
 use std::io::Write;
-use crate::gallery::{Gallery, GalleryOpts};
+use std::path::PathBuf;
 
 pub fn render_gallery(gallery: &Gallery, output_dir: &PathBuf, opts: &GalleryOpts) {
     if output_dir.exists() && !output_dir.is_dir() {
@@ -35,43 +35,69 @@ pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &GalleryOpts) {
     let img = ImageReader::open(image_path).unwrap().decode().unwrap();
     let scaled_img = img.resize(opts.max_width, opts.max_height, FilterType::Lanczos3);
     scaled_img.save(&target_path).ok();
+    log::info!("Rendered image: {}.", target_path.display());
 
     let thumbnail_path = get_thumbnail_path(output_dir, image_path);
     let min_size = min(img.width(), img.height());
-    let thumbnail_img = img.crop_imm(
-        (img.width() - min_size) / 2,
-        (img.height() - min_size) / 2,
-        min_size,
-        min_size
-    ).resize(opts.thumbnail_size, opts.thumbnail_size, FilterType::Nearest);
+    let thumbnail_img = img
+        .crop_imm(
+            (img.width() - min_size) / 2,
+            (img.height() - min_size) / 2,
+            min_size,
+            min_size,
+        )
+        .resize(
+            opts.thumbnail_size,
+            opts.thumbnail_size,
+            FilterType::Nearest,
+        );
     thumbnail_img.save(&thumbnail_path).ok();
+    log::info!("Rendered thumbnail image: {}.", thumbnail_path.display());
 }
 
-pub fn render_gallery_page(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, gallery_opts: &GalleryOpts) {
+pub fn render_gallery_page(
+    gallery: &crate::gallery::Gallery,
+    output_dir: &PathBuf,
+    gallery_opts: &GalleryOpts,
+) {
     let page_path = output_dir.join("index.html");
 
     let f = File::create(page_path.clone()).expect("Unable to create file");
     let mut output = BufWriter::new(f);
 
-    let template = IndexTemplate { gallery, gallery_opts };
+    let template = IndexTemplate {
+        gallery,
+        gallery_opts,
+    };
     write!(output, "{}", template.render().unwrap()).ok();
-
     log::info!("Rendered gallery page: {}.", page_path.display());
 }
 
-pub fn render_image_pages(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, gallery_opts: &GalleryOpts) {
+pub fn render_image_pages(
+    gallery: &crate::gallery::Gallery,
+    output_dir: &PathBuf,
+    gallery_opts: &GalleryOpts,
+) {
     let image_count = gallery.image_count();
     for (index, image) in gallery.images.iter().enumerate() {
         let page_path = output_dir.join(format!("{}.html", image.base_name()));
         let f = File::create(page_path.clone()).expect("Unable to create file");
         let mut output = BufWriter::new(f);
 
-        let template = ImageTemplate{
+        let template = ImageTemplate {
             gallery,
             image,
-            previous_image: if index > 0 {Some(&gallery.images[index-1])} else { None },
-            next_image: if index < image_count - 1 {Some(&gallery.images[index+1])} else { None },
-            index: index + 1,  // Not 0-based
+            previous_image: if index > 0 {
+                Some(&gallery.images[index - 1])
+            } else {
+                None
+            },
+            next_image: if index < image_count - 1 {
+                Some(&gallery.images[index + 1])
+            } else {
+                None
+            },
+            index: index + 1, // Not 0-based
             title: image.get_title().clone(),
             place: match &image.meta_info {
                 Some(meta_info) => meta_info.place.clone(),
@@ -80,7 +106,7 @@ pub fn render_image_pages(gallery: &crate::gallery::Gallery, output_dir: &PathBu
             author: match &image.meta_info {
                 Some(meta_info) => meta_info.author.clone(),
                 None => None,
-            }
+            },
         };
         write!(output, "{}", template.render().unwrap()).ok();
         log::info!("Rendered image page: {}.", page_path.display());
@@ -101,7 +127,7 @@ pub fn render_static_files(output_dir: &PathBuf) {
         let data = embedded.data;
         output.write_all(&data[..]).ok();
 
-        println!("{}", file_name);
+        log::info!("Added static file: {}", file_name);
     }
 }
 
