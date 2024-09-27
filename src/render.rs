@@ -1,9 +1,9 @@
 use crate::gallery::{Gallery, GalleryOpts};
-use crate::image::{Image, MetaInfo};
+use crate::image::Image;
 use crate::pages::{ImageTemplate, IndexTemplate, StaticFiles};
 use askama::Template;
 use image::imageops::FilterType;
-use image::{GenericImageView, ImageReader};
+use image::ImageReader;
 use std::cmp::min;
 use std::fs;
 use std::fs::File;

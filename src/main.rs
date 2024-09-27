@@ -22,9 +22,14 @@ fn process(input_dir: &PathBuf, output_dir: &PathBuf) {
     };
 
     let gallery = Gallery::from_input_dir(input_dir);
-    log::info!("Found {} images.", gallery.image_count());
-    render_gallery(&gallery, &output_dir, &opts);
-    log::info!("Done.");
+    let image_count = gallery.image_count();
+    if image_count > 0 {
+        log::info!("Found {} images.", gallery.image_count());
+        render_gallery(&gallery, &output_dir, &opts);
+        log::info!("Done.");
+    } else {
+        log::info!("No images found.");
+    }
 }
 
 fn main() {

@@ -1,4 +1,4 @@
-use chrono::{format::ParseResult, DateTime, Local, NaiveDateTime, TimeZone};
+use chrono::{Local, NaiveDateTime};
 use exif;
 use exif::{Exif, Tag};
 use serde::Deserialize;
@@ -114,8 +114,6 @@ fn parse_date_time(exif_source: &Exif, tag: Tag) -> Option<NaiveDateTime> {
     match field {
         None => None,
         Some(f) => {
-            let x: f32 = field.unwrap().value.into();
-
             let v = f.display_value().to_string();
             log::debug!("Parsing date time: {}", v);
             match NaiveDateTime::parse_from_str(&v, "%Y-%m-%d %H:%M:%S") {
