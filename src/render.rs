@@ -50,18 +50,20 @@ pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &GalleryOpts) {
 pub fn render_gallery_page(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, gallery_opts: &GalleryOpts) {
     let page_path = output_dir.join("index.html");
 
-    let f = File::create(page_path).expect("Unable to create file");
+    let f = File::create(page_path.clone()).expect("Unable to create file");
     let mut output = BufWriter::new(f);
 
     let template = IndexTemplate { gallery, gallery_opts };
     write!(output, "{}", template.render().unwrap()).ok();
+
+    log::info!("Rendered gallery page: {}.", page_path.display());
 }
 
 pub fn render_image_pages(gallery: &crate::gallery::Gallery, output_dir: &PathBuf, gallery_opts: &GalleryOpts) {
     let image_count = gallery.image_count();
     for (index, image) in gallery.images.iter().enumerate() {
         let page_path = output_dir.join(format!("{}.html", image.base_name()));
-        let f = File::create(page_path).expect("Unable to create file");
+        let f = File::create(page_path.clone()).expect("Unable to create file");
         let mut output = BufWriter::new(f);
 
         let template = ImageTemplate{
@@ -81,6 +83,7 @@ pub fn render_image_pages(gallery: &crate::gallery::Gallery, output_dir: &PathBu
             }
         };
         write!(output, "{}", template.render().unwrap()).ok();
+        log::info!("Rendered image page: {}.", page_path.display());
     }
 }
 

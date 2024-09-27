@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, TimeZone, format::ParseResult, NaiveDateTime};
 use exif;
 use exif::{Exif, Tag};
 use std::io::BufReader;
@@ -12,7 +12,7 @@ pub struct ExifInfo {
     pub aperture: String,
     pub exposure: String,
     pub focal_length: String,
-    pub date_time: DateTime<Local>,
+    pub date_time: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -52,12 +52,13 @@ impl Image {
         self.source_path.file_stem().unwrap().to_str().unwrap()
     }
 
-    pub fn get_date_time(&self) -> DateTime<Local> {
-        match &self.exif_info {
-            Some(exif_info) => exif_info.date_time,
-            // Use some other info?
-            None => Local::now(),
+    pub fn get_date_time(&self) -> NaiveDateTime {
+        if let Some(exif_info) = &self.exif_info {
+            if let Some(date_time) = exif_info.date_time {
+                return date_time;
+            }
         }
+        Local::now().naive_local()
     }
 
     pub fn get_title(&self) -> Option<String> {
@@ -85,9 +86,24 @@ pub fn extract_exif_info(source_path: &Path) -> Option<ExifInfo> {
             ),
             exposure: extract_exif_tag(&exif_source, Tag::ShutterSpeedValue, None),
             focal_length: extract_exif_tag(&exif_source, Tag::FocalLength, None),
-            date_time: Local::now(),
+            date_time: parse_date_time(&exif_source, Tag::DateTimeOriginal),
         }),
         Err(_) => None,
+    }
+}
+
+fn parse_date_time(exif_source: &Exif, tag: Tag) -> Option<NaiveDateTime> {
+    let field = exif_source.get_field(tag, exif::In::PRIMARY);
+    match field {
+        None => None,
+        Some(f) => {
+            let v = f.display_value().to_string();
+            log::debug!("Parsing date time: {}", v);
+            match NaiveDateTime::parse_from_str(&v, "%Y-%m-%d %H:%M:%S") {
+                Ok(result) => Some(result),
+                Err(_) => None
+            }
+        }
     }
 }
 

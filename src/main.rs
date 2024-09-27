@@ -26,6 +26,7 @@ fn process(input_dir: &PathBuf, output_dir: &PathBuf) {
 }
 
 fn main() {
+    env_logger::init();
     let args = Cli::parse();
 
     match &args.command {

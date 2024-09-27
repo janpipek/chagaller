@@ -19,7 +19,7 @@
             {% endif %}
             <span>{{ index }}/{{ gallery.image_count() }}</span>
             {% if let Some(t) = title %}<span>{{ t }}</span>{% endif %}
-            <span>{{ image.get_date_time().date_naive() -}}
+            <span>{{ image.get_date_time() -}}
                 {%- if let Some(p) = place -%}
                 , {{ p }}
                 {% endif %}
