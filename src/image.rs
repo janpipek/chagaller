@@ -45,6 +45,7 @@ impl Image {
     pub fn get_date_time(&self) -> DateTime<Local> {
         match &self.exif_info {
             Some(exif_info) => exif_info.date_time,
+            // Use some other info?
             None => Local::now(),
         }
     }

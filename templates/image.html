@@ -18,7 +18,7 @@
                 <span></span>
             {% endif %}
             <span>{{ index }}/{{ gallery.image_count() }}</span>
-            <span>{{ image.get_title()? }}</span>
+            <span>{{ image.get_title().unwrap_or_default() }}</span>
             <span>{{ image.get_date_time().date_naive() -}}
                 {%- if image.meta_info?.place.is_some() -%}
                 , {{ image.meta_info?.place.as_ref().unwrap() }}
