@@ -1,12 +1,12 @@
 use chrono::{Local, NaiveDateTime};
 use exif;
 use exif::{Exif, Tag};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::io::BufReader;
 use std::path::{Path, PathBuf}; // Import `fmt`
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct ExifInfo {
     pub camera: String,
     pub iso: String,
@@ -26,7 +26,7 @@ impl fmt::Display for ExifInfo {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, serde::Serialize)]
 pub struct MetaInfo {
     pub author: Option<String>,
     pub title: Option<String>,
@@ -43,7 +43,7 @@ impl Default for MetaInfo {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize)]
 pub struct Image {
     pub source_path: PathBuf,
     pub exif_info: Option<ExifInfo>,

@@ -1,15 +1,17 @@
 use crate::gallery::{Gallery, GalleryOpts};
 use crate::image::Image;
-use crate::pages::{ImageTemplate, IndexTemplate, StaticFiles};
-use askama::Template;
+use crate::pages::StaticFiles;
 use image::imageops::FilterType;
 use image::ImageReader;
+use minijinja_embed::load_templates;
 use std::cmp::min;
 use std::fs;
 use std::fs::File;
 use std::io::BufWriter;
 use std::io::Write;
 use std::path::PathBuf;
+
+use minijinja::{context, Environment};
 
 pub fn render_gallery(gallery: &Gallery, output_dir: &PathBuf, opts: &GalleryOpts) {
     if output_dir.exists() && !output_dir.is_dir() {
@@ -24,8 +26,11 @@ pub fn render_gallery(gallery: &Gallery, output_dir: &PathBuf, opts: &GalleryOpt
         render_images(image, output_dir, &opts);
     }
 
-    render_gallery_page(&gallery, output_dir, &opts);
-    render_image_pages(&gallery, output_dir, &opts);
+    let mut env = Environment::new();
+    load_templates!(&mut env);
+
+    render_gallery_page(&gallery, output_dir, &env, &opts);
+    render_image_pages(&gallery, output_dir, &env, &opts);
     render_static_files(output_dir);
 }
 
@@ -58,6 +63,7 @@ pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &GalleryOpts) {
 pub fn render_gallery_page(
     gallery: &crate::gallery::Gallery,
     output_dir: &PathBuf,
+    env: &Environment,
     gallery_opts: &GalleryOpts,
 ) {
     let page_path = output_dir.join("index.html");
@@ -65,17 +71,22 @@ pub fn render_gallery_page(
     let f = File::create(page_path.clone()).expect("Unable to create file");
     let mut output = BufWriter::new(f);
 
-    let template = IndexTemplate {
-        gallery,
-        gallery_opts,
-    };
-    write!(output, "{}", template.render().unwrap()).ok();
-    log::info!("Rendered gallery page: {}.", page_path.display());
+    // let tmpl = env.get_template("index.html").unwrap();
+    // let html = tmpl
+    //     .render(context! {
+    //         gallery,
+    //         gallery_opts,
+    //         images => gallery.images,
+    //     })
+    //     .unwrap();
+    // write!(output, "{}", html).ok();
+    // log::info!("Rendered gallery page: {}.", page_path.display());
 }
 
 pub fn render_image_pages(
     gallery: &crate::gallery::Gallery,
     output_dir: &PathBuf,
+    env: &Environment,
     gallery_opts: &GalleryOpts,
 ) {
     let image_count = gallery.image_count();
@@ -84,31 +95,44 @@ pub fn render_image_pages(
         let f = File::create(page_path.clone()).expect("Unable to create file");
         let mut output = BufWriter::new(f);
 
-        let template = ImageTemplate {
-            gallery,
-            image,
-            previous_image: if index > 0 {
-                Some(&gallery.images[index - 1])
-            } else {
-                None
-            },
-            next_image: if index < image_count - 1 {
-                Some(&gallery.images[index + 1])
-            } else {
-                None
-            },
-            index: index + 1, // Not 0-based
-            title: image.get_title().clone(),
-            place: match &image.meta_info {
-                Some(meta_info) => meta_info.place.clone(),
-                None => None,
-            },
-            author: match &image.meta_info {
-                Some(meta_info) => meta_info.author.clone(),
-                None => None,
-            },
-        };
-        write!(output, "{}", template.render().unwrap()).ok();
+        let tmpl = env.get_template("image.html").unwrap();
+        let html = tmpl
+            .render(context! {
+                gallery,
+                image,
+                image_count => gallery.image_count(),
+                index => index + 1,
+                gallery_opts,
+                exif => image.exif_info,
+            })
+            .unwrap();
+        write!(output, "{}", html).ok();
+
+        // let template = ImageTemplate {
+        //     gallery,
+        //     image,
+        //     previous_image: if index > 0 {
+        //         Some(&gallery.images[index - 1])
+        //     } else {
+        //         None
+        //     },
+        //     next_image: if index < image_count - 1 {
+        //         Some(&gallery.images[index + 1])
+        //     } else {
+        //         None
+        //     },
+        //     index: index + 1, // Not 0-based
+        //     title: image.get_title().clone(),
+        //     place: match &image.meta_info {
+        //         Some(meta_info) => meta_info.place.clone(),
+        //         None => None,
+        //     },
+        //     author: match &image.meta_info {
+        //         Some(meta_info) => meta_info.author.clone(),
+        //         None => None,
+        //     },
+        // };
+        // write!(output, "{}", template.render().unwrap()).ok();
         log::info!("Rendered image page: {}.", page_path.display());
     }
 }

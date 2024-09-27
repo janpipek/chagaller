@@ -1,16 +1,16 @@
 use crate::image::Image;
-use std::path::{Path, PathBuf};
 use serde::Deserialize;
+use std::path::{Path, PathBuf};
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize)]
 pub struct GalleryOpts {
     pub max_width: u32,
     pub max_height: u32,
     pub thumbnail_size: u32,
 }
 
-#[derive(Debug)]
-pub struct Gallery  {
+#[derive(Debug, serde::Serialize)]
+pub struct Gallery {
     pub title: String,
     pub images: Vec<Image>,
 }
@@ -29,7 +29,7 @@ impl Gallery {
             images: images.iter().map(|p| Image::from_source_path(p)).collect(),
             title: match meta_data {
                 None => String::from("Gallery"),
-                Some(m) => m.title
+                Some(m) => m.title,
             },
         }
     }
