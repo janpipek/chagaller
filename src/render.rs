@@ -6,7 +6,7 @@ use image::imageops::FilterType;
 use image::{GenericImageView, ImageReader};
 use crate::pages::{IndexTemplate, ImageTemplate, StaticFiles};
 use std::path::PathBuf;
-use crate::image::Image;
+use crate::image::{Image, MetaInfo};
 use askama::Template;
 use std::io::Write;
 use crate::gallery::{Gallery, GalleryOpts};
@@ -66,11 +66,19 @@ pub fn render_image_pages(gallery: &crate::gallery::Gallery, output_dir: &PathBu
 
         let template = ImageTemplate{
             gallery,
-            gallery_opts,
             image,
             previous_image: if index > 0 {Some(&gallery.images[index-1])} else { None },
             next_image: if index < image_count - 1 {Some(&gallery.images[index+1])} else { None },
             index: index + 1,  // Not 0-based
+            title: image.get_title().clone(),
+            place: match &image.meta_info {
+                Some(meta_info) => meta_info.place.clone(),
+                None => None,
+            },
+            author: match &image.meta_info {
+                Some(meta_info) => meta_info.author.clone(),
+                None => None,
+            }
         };
         write!(output, "{}", template.render().unwrap()).ok();
     }

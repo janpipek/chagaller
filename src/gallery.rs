@@ -10,7 +10,7 @@ pub struct GalleryOpts {
 }
 
 #[derive(Debug)]
-pub struct Gallery {
+pub struct Gallery  {
     pub title: String,
     pub images: Vec<Image>,
 }

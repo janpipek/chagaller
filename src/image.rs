@@ -15,15 +15,25 @@ pub struct ExifInfo {
     pub date_time: DateTime<Local>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct MetaInfo {
     pub author: Option<String>,
     pub title: Option<String>,
     pub place: Option<String>,
 }
 
+impl Default for MetaInfo {
+    fn default() -> Self {
+        MetaInfo {
+            author: None,
+            title: None,
+            place: None,
+        }
+    }
+}
+
 #[derive(Debug)]
-pub struct Image {
+pub struct Image  {
     pub source_path: PathBuf,
     pub exif_info: Option<ExifInfo>,
     pub meta_info: Option<MetaInfo>,
@@ -51,12 +61,12 @@ impl Image {
     }
 
     pub fn get_title(&self) -> Option<String> {
-        if let Some(m) = &self.meta_info {
-            m.title.clone()
+        if let Some(meta_info) = &self.meta_info {
+            if let Some(title) = &meta_info.title {
+                return Some(title.clone());
+            }
         }
-        else {
-            None
-        }
+        None
     }
 }
 

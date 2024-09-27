@@ -14,7 +14,7 @@
 <h1><a class="up-link" href=".." title="Up">↑</a> {{ gallery.title }}</h1>
 <div class="gallery-frame">
     {% for image in gallery.images %}
-    <a href="{{ image.base_name() }}.html" title="{{ image.get_title() }}" class="thumb"><img src="thumbnails/{{ image.base_name() }}.jpg" width="{{ gallery_opts.thumbnail_size }}" height="{{ gallery_opts.thumbnail_size }}" /></a>
+        <a href="{{ image.base_name() }}.html" title="{{ image.get_title().unwrap_or_default() }}" class="thumb"><img src="thumbnails/{{ image.base_name() }}.jpg" width="{{ gallery_opts.thumbnail_size }}" height="{{ gallery_opts.thumbnail_size }}" /></a>
     {% endfor %}
 </div>
 </body>
