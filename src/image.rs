@@ -46,6 +46,7 @@ impl Default for MetaInfo {
 #[derive(Debug, serde::Serialize)]
 pub struct Image {
     pub source_path: PathBuf,
+    pub base_name: String,
     pub exif_info: Option<ExifInfo>,
     pub meta_info: Option<MetaInfo>,
 }
@@ -62,11 +63,8 @@ impl Image {
                 exif_info
             },
             meta_info: parse_image_yaml(source_path),
+            base_name: source_path.file_stem().unwrap().to_string_lossy().to_string(),
         }
-    }
-
-    pub fn base_name(&self) -> &str {
-        self.source_path.file_stem().unwrap().to_str().unwrap()
     }
 
     pub fn get_date_time(&self) -> NaiveDateTime {

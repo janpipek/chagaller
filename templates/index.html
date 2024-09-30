@@ -17,11 +17,11 @@
         <div class="gallery-frame">
             {% for image in images %}
             <a
-                href="{{ image.base_name() }}.html"
-                title="{{ image.get_title() }}"
+                href="{{ image.base_name }}.html"
+                title="{{ image.title }}"
                 class="thumb"
                 ><img
-                    src="thumbnails/{{ image.base_name() }}.jpg"
+                    src="thumbnails/{{ image.base_name }}.jpg"
                     width="{{ gallery_opts.thumbnail_size }}"
                     height="{{ gallery_opts.thumbnail_size }}"
             /></a>

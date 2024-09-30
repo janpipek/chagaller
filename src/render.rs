@@ -13,6 +13,7 @@ use std::path::PathBuf;
 
 use minijinja::{context, Environment};
 
+
 pub fn render_gallery(gallery: &Gallery, output_dir: &PathBuf, opts: &GalleryOpts) {
     if output_dir.exists() && !output_dir.is_dir() {
         return;
@@ -71,16 +72,16 @@ pub fn render_gallery_page(
     let f = File::create(page_path.clone()).expect("Unable to create file");
     let mut output = BufWriter::new(f);
 
-    // let tmpl = env.get_template("index.html").unwrap();
-    // let html = tmpl
-    //     .render(context! {
-    //         gallery,
-    //         gallery_opts,
-    //         images => gallery.images,
-    //     })
-    //     .unwrap();
-    // write!(output, "{}", html).ok();
-    // log::info!("Rendered gallery page: {}.", page_path.display());
+    let tmpl = env.get_template("index.html").unwrap();
+    let html = tmpl
+        .render(context! {
+            gallery,
+            gallery_opts,
+            images => gallery.images,
+        })
+        .unwrap();
+    write!(output, "{}", html).ok();
+    log::info!("Rendered gallery page: {}.", page_path.display());
 }
 
 pub fn render_image_pages(
@@ -91,7 +92,7 @@ pub fn render_image_pages(
 ) {
     let image_count = gallery.image_count();
     for (index, image) in gallery.images.iter().enumerate() {
-        let page_path = output_dir.join(format!("{}.html", image.base_name()));
+        let page_path = output_dir.join(format!("{}.html", image.base_name));
         let f = File::create(page_path.clone()).expect("Unable to create file");
         let mut output = BufWriter::new(f);
 
@@ -103,36 +104,30 @@ pub fn render_image_pages(
                 image_count => gallery.image_count(),
                 index => index + 1,
                 gallery_opts,
+                date_time => image.get_date_time(),
                 exif => image.exif_info,
+                previous => if index > 0 {
+                    Some(&gallery.images[index - 1])
+                } else {
+                    None
+                },
+                next => if index < image_count - 1 {
+                    Some(&gallery.images[index + 1])
+                } else {
+                    None
+                },
+                place => match &image.meta_info {
+                    Some(meta_info) => meta_info.place.clone(),
+                    None => None,
+                },
+                author => match &image.meta_info {
+                    Some(meta_info) => meta_info.author.clone(),
+                    None => None,
+                },
+                title => image.get_title()
             })
             .unwrap();
         write!(output, "{}", html).ok();
-
-        // let template = ImageTemplate {
-        //     gallery,
-        //     image,
-        //     previous_image: if index > 0 {
-        //         Some(&gallery.images[index - 1])
-        //     } else {
-        //         None
-        //     },
-        //     next_image: if index < image_count - 1 {
-        //         Some(&gallery.images[index + 1])
-        //     } else {
-        //         None
-        //     },
-        //     index: index + 1, // Not 0-based
-        //     title: image.get_title().clone(),
-        //     place: match &image.meta_info {
-        //         Some(meta_info) => meta_info.place.clone(),
-        //         None => None,
-        //     },
-        //     author: match &image.meta_info {
-        //         Some(meta_info) => meta_info.author.clone(),
-        //         None => None,
-        //     },
-        // };
-        // write!(output, "{}", template.render().unwrap()).ok();
         log::info!("Rendered image page: {}.", page_path.display());
     }
 }

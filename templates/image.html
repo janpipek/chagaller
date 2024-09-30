@@ -12,22 +12,22 @@
             <a class="arrow" id="home" title="Home" href="index.html"
                 >&#9632;</a
             >
-            {% if previous_image %}
+            {% if previous %}
             <a
                 class="arrow"
                 id="left"
                 title="Previous"
-                href="{{ previous.base_name() }}.html"
+                href="{{ previous.base_name }}.html"
                 >&#9664;</a
             >
             {% else %}
             <span></span>
-            {% endif %} {% if next_image %}
+            {% endif %} {% if next %}
             <a
                 class="arrow"
                 id="right"
                 title="Next"
-                href="{{ next.base_name() }}.html"
+                href="{{ next.base_name }}.html"
                 >&#9654;</a
             >
             {% else %}
@@ -36,7 +36,7 @@
             <span>{{ index }}/{{ image_count }}</span>
             {% if title %}<span>{{ title }}</span>{% endif %}
             <span>
-                {{ image.get_date_time() -}} {%- if place -%} , {{ place }} {%
+                {{ date_time -}} {%- if place -%} , {{ place }} {%
                 endif %}
             </span>
             {% if author %}
@@ -45,7 +45,7 @@
         </div>
         <img
             class="image-itself"
-            src="images/{{ image.base_name() }}.jpg"
+            src="images/{{ image.base_name }}.jpg"
             id="image-itself"
         />
         {% if exif %}
