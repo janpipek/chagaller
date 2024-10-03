@@ -9,9 +9,9 @@ use std::fs;
 use std::fs::File;
 use std::io::BufWriter;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-pub fn render_gallery(gallery: &Gallery, output_dir: &PathBuf, opts: &GalleryOpts) {
+pub fn render_gallery(gallery: &Gallery, output_dir: &Path, opts: &GalleryOpts) {
     if output_dir.exists() && !output_dir.is_dir() {
         return;
     }
@@ -21,15 +21,15 @@ pub fn render_gallery(gallery: &Gallery, output_dir: &PathBuf, opts: &GalleryOpt
     fs::create_dir(output_dir.join("thumbnails")).ok();
 
     for image in gallery.images.iter() {
-        render_images(image, output_dir, &opts);
+        render_images(image, output_dir, opts);
     }
 
-    render_gallery_page(&gallery, output_dir, &opts);
-    render_image_pages(&gallery, output_dir, &opts);
+    render_gallery_page(gallery, output_dir, opts);
+    render_image_pages(gallery, output_dir);
     render_static_files(output_dir);
 }
 
-pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &GalleryOpts) {
+pub fn render_images(image: &Image, output_dir: &Path, opts: &GalleryOpts) {
     let image_path = &image.source_path;
     let target_path = get_target_path(output_dir, image_path);
     let img = ImageReader::open(image_path).unwrap().decode().unwrap();
@@ -57,7 +57,7 @@ pub fn render_images(image: &Image, output_dir: &PathBuf, opts: &GalleryOpts) {
 
 pub fn render_gallery_page(
     gallery: &crate::gallery::Gallery,
-    output_dir: &PathBuf,
+    output_dir: &Path,
     gallery_opts: &GalleryOpts,
 ) {
     let page_path = output_dir.join("index.html");
@@ -75,8 +75,8 @@ pub fn render_gallery_page(
 
 pub fn render_image_pages(
     gallery: &crate::gallery::Gallery,
-    output_dir: &PathBuf,
-    gallery_opts: &GalleryOpts,
+    output_dir: &Path,
+    // gallery_opts: &GalleryOpts,
 ) {
     let image_count = gallery.image_count();
     for (index, image) in gallery.images.iter().enumerate() {
@@ -113,7 +113,7 @@ pub fn render_image_pages(
     }
 }
 
-pub fn render_static_files(output_dir: &PathBuf) {
+pub fn render_static_files(output_dir: &Path) {
     let static_dir = output_dir.join("static");
     fs::create_dir(static_dir.clone()).ok();
 
@@ -131,14 +131,14 @@ pub fn render_static_files(output_dir: &PathBuf) {
     }
 }
 
-pub fn get_thumbnail_path(output_dir: &PathBuf, image_path: &PathBuf) -> PathBuf {
+pub fn get_thumbnail_path(output_dir: &Path, image_path: &Path) -> PathBuf {
     let name = image_path.file_name().unwrap();
     let mut thumbnail_path = output_dir.join("thumbnails").join(name);
     thumbnail_path.set_extension("jpg");
     thumbnail_path
 }
 
-pub fn get_target_path(output_dir: &PathBuf, image_path: &PathBuf) -> PathBuf {
+pub fn get_target_path(output_dir: &Path, image_path: &Path) -> PathBuf {
     let name = image_path.file_name().unwrap();
     let mut target_path = output_dir.join("images").join(name);
     target_path.set_extension("jpg");

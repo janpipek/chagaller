@@ -4,14 +4,14 @@ mod image;
 mod pages;
 mod render;
 
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::cli::{Cli, Commands};
 use crate::gallery::{Gallery, GalleryOpts};
 use crate::render::render_gallery;
 use clap::Parser;
 
-fn process(input_dir: &PathBuf, output_dir: &PathBuf) {
+fn process(input_dir: &Path, output_dir: &Path) {
     let dir_str = input_dir.display();
     println!("Processing '{dir_str}'.");
 
@@ -25,7 +25,7 @@ fn process(input_dir: &PathBuf, output_dir: &PathBuf) {
     let image_count = gallery.image_count();
     if image_count > 0 {
         log::info!("Found {} images.", gallery.image_count());
-        render_gallery(&gallery, &output_dir, &opts);
+        render_gallery(&gallery, output_dir, &opts);
         log::info!("Done.");
     } else {
         log::info!("No images found.");

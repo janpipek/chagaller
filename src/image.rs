@@ -1,5 +1,4 @@
 use chrono::{Local, NaiveDateTime};
-use exif;
 use exif::{Exif, Tag};
 use serde::Deserialize;
 use std::fmt;
@@ -26,21 +25,11 @@ impl fmt::Display for ExifInfo {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Default)]
 pub struct MetaInfo {
     pub author: Option<String>,
     pub title: Option<String>,
     pub place: Option<String>,
-}
-
-impl Default for MetaInfo {
-    fn default() -> Self {
-        MetaInfo {
-            author: None,
-            title: None,
-            place: None,
-        }
-    }
 }
 
 #[derive(Debug)]

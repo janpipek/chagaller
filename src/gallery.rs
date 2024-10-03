@@ -1,6 +1,6 @@
 use crate::image::Image;
-use std::path::{Path, PathBuf};
 use serde::Deserialize;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct GalleryOpts {
@@ -10,7 +10,7 @@ pub struct GalleryOpts {
 }
 
 #[derive(Debug)]
-pub struct Gallery  {
+pub struct Gallery {
     pub title: String,
     pub images: Vec<Image>,
 }
@@ -29,7 +29,7 @@ impl Gallery {
             images: images.iter().map(|p| Image::from_source_path(p)).collect(),
             title: match meta_data {
                 None => String::from("Gallery"),
-                Some(m) => m.title
+                Some(m) => m.title,
             },
         }
     }
@@ -51,7 +51,7 @@ impl Gallery {
 }
 
 fn find_image_files(input_dir: &Path) -> Vec<PathBuf> {
-    let allowed_extensions = vec!["jpg", "jpeg"];
+    let allowed_extensions = ["jpg", "jpeg"];
     let mut result = vec![];
     for item in input_dir.read_dir().expect("Cannot read from directory.") {
         let path = item.unwrap().path();
